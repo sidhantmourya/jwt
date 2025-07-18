@@ -5,6 +5,7 @@ import com.example.jwt.handler.AuthEntryPoint;
 import com.example.jwt.handler.CustomAccessDeniedHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,23 +26,37 @@ public class SecurityConfig {
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
+    @Bean
+    @Order(1)
+    public SecurityFilterChain publicEndpoints(HttpSecurity http) throws Exception
+    {
+        System.out.println("Public endpoint");
+        return http
+                .securityMatcher(
+                        "/auth/login",
+                        "/auth/register",
+                        "/actuator/**")
+                .authorizeHttpRequests(auth ->auth.anyRequest().permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf->csrf.disable())
+                .build();
+    }
+
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
+    @Order(2)
+    public SecurityFilterChain privateEndpoint(HttpSecurity http) throws Exception
     {
+        System.out.println("Priv endpoint");
          return http
                     .csrf(csrf -> csrf.disable())
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .authorizeHttpRequests(auth -> auth.requestMatchers(
-                            "/api/auth/login",
-                                    "/api/auth/register",
-                                    "/actuator/health")
-                    .permitAll().anyRequest().authenticated())
-                         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                         .exceptionHandling(ex -> ex
-                                 .authenticationEntryPoint(authEntryPoint)
-                                 .accessDeniedHandler(accessDeniedHandler))
+                    .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                    .exceptionHandling(ex -> ex
+                    .authenticationEntryPoint(authEntryPoint)
+                    .accessDeniedHandler(accessDeniedHandler))
                     .build();
 
 
