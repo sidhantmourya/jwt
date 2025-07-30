@@ -3,6 +3,7 @@ package com.example.jwt.config;
 import com.example.jwt.filter.JwtAuthFilter;
 import com.example.jwt.handler.AuthEntryPoint;
 import com.example.jwt.handler.CustomAccessDeniedHandler;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -24,6 +25,13 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
         this.authEntryPoint = authEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
+    }
+    @Bean
+    public FilterRegistrationBean<JwtAuthFilter> jwtAuthFilterfilterRegistrationBean(JwtAuthFilter filter)
+    {
+        FilterRegistrationBean<JwtAuthFilter> registrationBean = new FilterRegistrationBean<>(filter);
+        registrationBean.setEnabled(false);
+        return registrationBean;
     }
 
     @Bean

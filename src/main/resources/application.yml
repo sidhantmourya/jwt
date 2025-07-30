@@ -15,6 +15,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  redis:
+    host: ${SPRING_REDIS_HOST}
+    port: 6379
+jwt:
+  secret: ${JWT_SECRET_KEY:dmVyeSBsb25nIHRleHQgdXNlZCBmb3IgZW5jb25kaW5nIGp3dA==}
+  access-token-expiration-ms: 3600000
 
 management:
   endpoints:
