@@ -1,7 +1,9 @@
 com\example\jwt\JwtApplication.class
 com\example\jwt\dto\TokenDTO.class
+com\example\jwt\util\JwtUtil.class
 com\example\jwt\repository\RefreshTokenRepository.class
 com\example\jwt\filter\JwtAuthFilter.class
+com\example\jwt\service\UserDetailsServiceImpl.class
 com\example\jwt\repository\UserRepository.class
 com\example\jwt\handler\CustomAccessDeniedHandler.class
 com\example\jwt\model\Users.class
