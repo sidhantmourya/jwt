@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Define properties -->
+    <property name="LOGS" value="./logs" />
+    <property name="APPLICATION_NAME" value="jwt-service" />
+    
+    <!-- Console appender with colored output for development -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{ISO8601} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <!-- JSON Console appender for Docker/production -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <mdc/>
+                <message/>
+                <stackTrace/>
+                <pattern>
+                    <pattern>
+                        {
+                            "service": "${APPLICATION_NAME}",
+                            "traceId": "%X{traceId:-}",
+                            "spanId": "%X{spanId:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+    
+    <!-- File appender for general application logs -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/jwt-service.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/jwt-service.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <!-- Security events file appender -->
+    <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/security.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/security.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <mdc/>
+                <message/>
+                <stackTrace/>
+                <pattern>
+                    <pattern>
+                        {
+                            "service": "${APPLICATION_NAME}",
+                            "eventType": "security",
+                            "traceId": "%X{traceId:-}",
+                            "spanId": "%X{spanId:-}",
+                            "userId": "%X{userId:-}",
+                            "clientIp": "%X{clientIp:-}",
+                            "userAgent": "%X{userAgent:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+    
+    <!-- Audit events file appender -->
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/audit.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/audit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>365</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <mdc/>
+                <message/>
+                <stackTrace/>
+                <pattern>
+                    <pattern>
+                        {
+                            "service": "${APPLICATION_NAME}",
+                            "eventType": "audit",
+                            "traceId": "%X{traceId:-}",
+                            "spanId": "%X{spanId:-}",
+                            "userId": "%X{userId:-}",
+                            "action": "%X{action:-}",
+                            "resource": "%X{resource:-}",
+                            "clientIp": "%X{clientIp:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+    
+    <!-- Async wrapper for performance -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE"/>
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+    
+    <appender name="ASYNC_SECURITY" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="SECURITY_FILE"/>
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+    
+    <appender name="ASYNC_AUDIT" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="AUDIT_FILE"/>
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+    
+    <!-- Logger configurations -->
+    <logger name="com.example.jwt.security" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_SECURITY"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <logger name="com.example.jwt.audit" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_AUDIT"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- Reduce noise from Spring/Hibernate -->
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+    
+    <!-- JWT specific logging -->
+    <logger name="com.example.jwt" level="DEBUG"/>
+    
+    <!-- Root logger -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+        </root>
+    </springProfile>
+    
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+        </root>
+    </springProfile>
+</configuration>

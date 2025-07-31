@@ -1,14 +1,16 @@
 package com.example.jwt.dto;
 
+import java.util.Date;
+
 public class TokenDTO {
 
     private String accessToken;
     private String tokenType;
     private long expires;
     private String refreshToken;
-    long issuedAt;
+    Date issuedAt;
 
-    public TokenDTO(String accessToken, String tokenType, long expires, String refreshToken, long issuedAt) {
+    public TokenDTO(String accessToken, String tokenType, long expires, String refreshToken, Date issuedAt) {
         this.accessToken = accessToken;
         this.tokenType = tokenType;
         this.expires = expires;
@@ -51,11 +53,11 @@ public class TokenDTO {
         this.refreshToken = refreshToken;
     }
 
-    public long getIssuedAt() {
+    public Date getIssuedAt() {
         return issuedAt;
     }
 
-    public void setIssuedAt(long issuedAt) {
+    public void setIssuedAt(Date issuedAt) {
         this.issuedAt = issuedAt;
     }
 }

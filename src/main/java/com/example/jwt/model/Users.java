@@ -32,7 +32,7 @@ public class Users implements UserDetails {
     private String email;
 
     @Column(name = "is_active", nullable = false)
-    private boolean isActive;
+        private boolean isActive;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -47,6 +47,19 @@ public class Users implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id") //ta
     )
     private Set<Roles> roles = new HashSet<>();
+
+    @PrePersist
+    protected void onPrePersist()
+    {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onPreUpdate()
+    {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;

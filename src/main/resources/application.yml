@@ -26,7 +26,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,loggers
   endpoint:
     health:
       show-details: always
+    loggers:
+      enabled: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"
+  level:
+    com.example.jwt: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web: INFO
