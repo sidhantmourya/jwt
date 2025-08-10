@@ -129,10 +129,10 @@ The application implements comprehensive structured logging with multiple log fi
 -   **Token Validation Service:** Dedicated `/validate` endpoint for token verification by other microservices
 -   ~~**Token Blacklisting:** Integration with Redis for maintaining invalidated token lists~~ **Implemented**
 
-~~### 🗄️ Redis Integration~~**Implemented**
-~~-   **Enhanced Logout Functionality:** Redis-backed token invalidation for immediate logout across all sessions~~
-~~-   **Session Management:** Redis-based session storage for improved scalability~~
-~~-   **Rate Limiting:** Redis-powered rate limiting for API endpoints~~
+~~### 🗄️ Redis Integration~~  **Implemented**
+-   ~~**Enhanced Logout Functionality:** Redis-backed token invalidation for immediate logout across all sessions~~
+-   ~~**Session Management:** Redis-based session storage for improved scalability~~
+-   ~~**Rate Limiting:** Redis-powered rate limiting for API endpoints~~
 
 ### ☸️ Kubernetes Deployment
 -   **Helm Charts:** Ready-to-deploy Kubernetes manifests with Helm chart support
@@ -141,7 +141,7 @@ The application implements comprehensive structured logging with multiple log fi
 -   **Config Management:** Kubernetes ConfigMaps and Secrets integration
 
 ~~### 🔍 Advanced Monitoring~~ (**Implemented**)
-~~-   **Log Aggregation:** ELK Stack (Elasticsearch, Logstash, Kibana) integration~~
+-   ~~**Log Aggregation:** ELK Stack (Elasticsearch, Logstash, Kibana) integration~~
 
 ## Dependencies
 
