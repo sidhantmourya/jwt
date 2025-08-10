@@ -1,6 +1,7 @@
 package com.example.jwt.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -18,6 +19,7 @@ public class Roles {
     private String name;
 
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "roles")
     private Set<Users> users = new HashSet<>();
 

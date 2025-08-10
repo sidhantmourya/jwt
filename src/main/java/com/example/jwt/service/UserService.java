@@ -11,6 +11,7 @@ import com.example.jwt.logging.AuditLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,18 +32,21 @@ public class UserService {
     private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public UserService(UserRepository userRepository, RolesRepository rolesRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RolesRepository rolesRepository, PasswordEncoder passwordEncoder, RedisTemplate<String, Object> redisTemplate) {
         this.userRepository = userRepository;
         this.rolesRepository = rolesRepository;
         this.passwordEncoder = passwordEncoder;
+        this.redisTemplate = redisTemplate;
     }
 
     public void registerNewUser(RegisterRequestDTO requestDTO)
     {
         String clientIP = MDC.get("clientIp");
         logger.info("Registering new user: {}", requestDTO.getUsername());
-        if(userRepository.existsByUsername(requestDTO.getUsername()) || userRepository.existsByEmail(requestDTO.getEmail()))
+        Users cacheUser = getUser(requestDTO.getEmail(), requestDTO.getUsername());
+        if(cacheUser!= null || userRepository.existsByEmailOrUsername(requestDTO.getEmail(), requestDTO.getUsername()))
         {
             logger.warn("Registration failed - User already exists: {}", requestDTO.getUsername());
             AuditLogger.logError(requestDTO.getUsername(), "user_registration", "User already exists", clientIP);
@@ -73,7 +78,12 @@ public class UserService {
                         .collect(Collectors.toSet());
             }
             user.setRoles(roles);
+
+            updateCache(user, 3600L);
+
             userRepository.save(user);
+
+
             logger.info("User successfully registered: {}", requestDTO.getUsername());
             AuditLogger.logDataModification(requestDTO.getUsername(), "User", user.getId() != null ? user.getId().toString() : "new", "CREATE", clientIP);
         } catch (Exception e) {
@@ -82,6 +92,51 @@ public class UserService {
             throw e;
         }
 
+    }
+
+    public Users getUser(String email, String username) {
+
+        String keyStr = null;
+        if(redisTemplate.hasKey("user:email:"+email))
+        {
+            keyStr  = (String) redisTemplate.opsForValue().get("user:email:"+email);
+
+//            return (Users) redisTemplate.opsForValue().get(id);
+        }
+        if(redisTemplate.hasKey("user:username:"+username))
+        {
+            keyStr = (String) redisTemplate.opsForValue().get("user:username:"+username);
+
+//            return (Users) redisTemplate.opsForValue().get(id);
+        }
+        if(keyStr != null)
+        {
+
+            return (Users) redisTemplate.opsForValue().get(keyStr);
+        }
+
+        return null;
+    }
+
+    public void updateCache(Users user, Long ttlInMili)
+    {
+        redisTemplate.opsForValue().set("user:email:"+user.getEmail(),String.valueOf(user.getId()), ttlInMili, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set("user:username:"+user.getUsername(), String.valueOf(user.getId()), ttlInMili, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set("user:id:"+user.getId(), user, ttlInMili, TimeUnit.MILLISECONDS);
+
+    }
+
+    public void removeCache(String username)
+    {
+        Users user = getUser(null, username);
+        if(user == null)
+        {
+            logger.error("User Not present");
+            return;
+        }
+        redisTemplate.delete("user:email:"+user.getEmail());
+        redisTemplate.delete("user:username:"+user.getUsername());
+        redisTemplate.delete("user:id:"+user.getId());
     }
 
     public ResponseDTO loadUserDetailsForSecurity()

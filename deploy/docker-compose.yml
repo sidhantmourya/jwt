@@ -37,6 +37,8 @@ services:
       SPRING_REDIS_HOST: redis
     networks:
       - jwt-network
+    volumes:
+      - app-logs:/app/logs
   redis:
     image: redis:7
     container_name: redis-cli
@@ -53,14 +55,10 @@ services:
     networks:
       - jwt-network
 
-
-
-
-
-
 networks:
   jwt-network:
     name: jwt-network
 
 volumes:
   mysql-data:
+  app-logs:

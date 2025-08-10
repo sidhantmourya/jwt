@@ -14,6 +14,9 @@ public class RegisterRequestDTO {
         this.password = password;
     }
 
+    public RegisterRequestDTO() {
+    }
+
     public String getUsername() {
         return username;
     }

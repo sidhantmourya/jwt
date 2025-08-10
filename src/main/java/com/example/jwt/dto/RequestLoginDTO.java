@@ -5,6 +5,8 @@ public class RequestLoginDTO {
     private String username;
     private String password;
 
+    public RequestLoginDTO() {
+    }
 
     public String getUsername() {
         return username;

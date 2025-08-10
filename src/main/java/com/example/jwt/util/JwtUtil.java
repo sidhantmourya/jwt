@@ -8,12 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static io.jsonwebtoken.Jwts.*;
@@ -28,6 +30,12 @@ public class JwtUtil {
 
     @Value("${jwt.access-token-expiration-ms}")
     private long expirationTime;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    public JwtUtil(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private Key getSignInKey()
     {
@@ -51,6 +59,9 @@ public class JwtUtil {
                 .signWith(getSignInKey())
                 .compact();
         logger.debug("Access token generated successfully for user: {}", userDetails.getUsername());
+
+        redisTemplate.opsForValue().set("valid:"+token,true, expirationTime, TimeUnit.MILLISECONDS);
+
         return token;
     }
 
@@ -82,6 +93,11 @@ public class JwtUtil {
 
     public boolean validateToken(String token, UserDetails userDetails)
     {
+        if(redisTemplate.hasKey("valid:"+token))
+        {
+            return true;
+        }
+
         logger.debug("Validating token for user: {}", userDetails.getUsername());
         final String username = extractUsername(token);
         boolean isValid = (userDetails.getUsername().equals(username) && !isTokenExpired(token));

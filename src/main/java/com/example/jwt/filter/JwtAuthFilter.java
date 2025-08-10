@@ -1,5 +1,6 @@
 package com.example.jwt.filter;
 
+import com.example.jwt.service.TokenBlackListService;
 import com.example.jwt.util.JwtUtil;
 import com.example.jwt.logging.SecurityLogger;
 import org.slf4j.Logger;
@@ -24,10 +25,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final TokenBlackListService tokenBlackListService;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService, TokenBlackListService tokenBlackListService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.tokenBlackListService = tokenBlackListService;
     }
 
 
@@ -35,13 +38,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = jwtUtil.extractToken(request);
+
         if(token == null)
         {
             logger.warn("Token not found");
             filterChain.doFilter(request, response);
             return;
         }
-        if(jwtUtil.isTokenExpired(token))
+        if(tokenBlackListService.isTokenBlackListed(token))
         {
             logger.warn("Token expired");
             filterChain.doFilter(request, response);

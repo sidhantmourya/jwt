@@ -53,7 +53,9 @@ public class AuthenticationService {
             SecurityLogger.logAuthenticationAttempt(requestDTO.getUsername(), clientIP, null, false);
             throw e;
         }
-        Optional<Users> users = userRepository.findByUsername(requestDTO.getUsername());
+        Users cacheUser = userService.getUser(null, requestDTO.getUsername());
+
+        Optional<Users> users = cacheUser!= null ? Optional.of(cacheUser) : userRepository.findByUsername(requestDTO.getUsername());
         if(users.isEmpty())
         {
             logger.error("User not found during login: {}", requestDTO.getUsername());
@@ -75,6 +77,8 @@ public class AuthenticationService {
         tokenDTO.setExpires(jwtUtil.getExpirationTime());
         tokenDTO.setRefreshToken(refreshTokens.getToken());
         tokenDTO.setIssuedAt(issuedAt);
+
+        userService.updateCache(user, jwtUtil.getExpirationTime());
         
         logger.info("Login successful for user: {}", user.getUsername());
         return tokenDTO;
