@@ -87,7 +87,7 @@ All endpoints are available under the `/auth` path.
 | `/validate`     | POST   | Validate the access token                 | **Planned** - Future enhancement |
 | `/refresh`      | POST   | Get a new access token using refresh token | **Planned** - Future enhancement |
 
-> **Note:** The `/validate` and `/refresh` endpoints are reserved for future implementation along with enhanced Redis integration for advanced session management and logout functionality.
+> **Note:** The `/validate` and `/refresh` endpoints are reserved for future implementation.
 
 ## Configuration
 
@@ -127,13 +127,12 @@ The application implements comprehensive structured logging with multiple log fi
 ### 🔄 Token Management
 -   **Refresh Token Implementation:** Complete implementation of the `/refresh` endpoint with secure refresh token rotation
 -   **Token Validation Service:** Dedicated `/validate` endpoint for token verification by other microservices
--   **Token Blacklisting:** Integration with Redis for maintaining invalidated token lists
+-   ~~**Token Blacklisting:** Integration with Redis for maintaining invalidated token lists~~ **Implemented**
 
-### 🗄️ Redis Integration
--   **Enhanced Logout Functionality:** Redis-backed token invalidation for immediate logout across all sessions
--   **Log Buffer Management:** Redis as a high-performance buffer for log aggregation before persistence
--   **Session Management:** Redis-based session storage for improved scalability
--   **Rate Limiting:** Redis-powered rate limiting for API endpoints
+~~### 🗄️ Redis Integration~~**Implemented**
+~~-   **Enhanced Logout Functionality:** Redis-backed token invalidation for immediate logout across all sessions~~
+~~-   **Session Management:** Redis-based session storage for improved scalability~~
+~~-   **Rate Limiting:** Redis-powered rate limiting for API endpoints~~
 
 ### ☸️ Kubernetes Deployment
 -   **Helm Charts:** Ready-to-deploy Kubernetes manifests with Helm chart support
@@ -141,11 +140,8 @@ The application implements comprehensive structured logging with multiple log fi
 -   **Service Mesh Integration:** Istio/Envoy integration for advanced traffic management
 -   **Config Management:** Kubernetes ConfigMaps and Secrets integration
 
-### 🔍 Advanced Monitoring
--   **Distributed Tracing:** Integration with Jaeger or Zipkin for request tracing
--   **Metrics Collection:** Prometheus metrics for performance monitoring
--   **Health Checks:** Advanced health check endpoints for Kubernetes probes
--   **Log Aggregation:** ELK Stack (Elasticsearch, Logstash, Kibana) integration
+~~### 🔍 Advanced Monitoring~~ (**Implemented**)
+~~-   **Log Aggregation:** ELK Stack (Elasticsearch, Logstash, Kibana) integration~~
 
 ## Dependencies
 
